@@ -10,7 +10,7 @@ private val bottom = ".#..#..#..#..#..#...".toPattern()
 private const val dragonFactor = 15
 
 fun main() {
-    pieces = getInput(20, 2020).split("\n\n").map { puzzleString ->
+    pieces = getInputString(20, 2020).split("\n\n").map { puzzleString ->
         val lines = puzzleString.lines().toMutableList()
         val id = lines.removeFirst().drop(5).take(4).toLong()
         val bodyLines = lines.map { it.toCharArray() }.toTypedArray()

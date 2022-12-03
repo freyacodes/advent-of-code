@@ -1,6 +1,6 @@
 fun main() {
     val input = mutableSetOf<Point4>()
-    getInput(17, 2020).lines().forEachIndexed { y, s ->
+    getInput(17, 2020).forEachIndexed { y, s ->
         s.forEachIndexed { x, c ->
             if(c == '#') input.add(Point4(x, y, 0, 0))
         }

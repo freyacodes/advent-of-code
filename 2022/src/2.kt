@@ -21,6 +21,6 @@ fun main() {
         "C Y" to 3 + 3,
         "C Z" to 1 + 6
     )
-    getInput(2).lines().sumOf { scores1[it]!! }.let { println("Part 1:  $it") }
-    getInput(2).lines().sumOf { scores2[it]!! }.let { println("Part 2:  $it") }
+    println("Part 1:  ${getInput(2).sumOf { scores1[it]!! }}")
+    println("Part 2:  ${getInput(2).sumOf { scores2[it]!! }}")
 }

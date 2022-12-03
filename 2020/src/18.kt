@@ -4,7 +4,6 @@ import java.lang.StringBuilder
 
 fun main() {
     getInput(18, 2020)
-        .lines()
         .sumOf {
             try {
                 evaluateV2(tokenize(it)).value

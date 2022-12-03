@@ -1,7 +1,7 @@
 lateinit var ruleStrings: MutableMap<Int, String>
 private val rules = mutableMapOf<Int, Rule>()
 fun main() {
-    val lines = getInput(19, 2020).lines()
+    val lines = getInput(19, 2020)
     ruleStrings = lines.takeWhile { it.isNotBlank() }.associate { line ->
         val k = line.takeWhile { it.isDigit() }.toInt()
         val v = line.dropWhile { it.isDigit() || it == ':' }.trim()

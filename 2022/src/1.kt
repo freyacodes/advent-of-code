@@ -2,7 +2,7 @@ fun main() {
     var currentElf = 0
     val elves = mutableListOf<Int>()
 
-    getInput(1).lines().forEach { line ->
+    getInput(1).forEach { line ->
         if (line.isBlank()) {
             elves.add(currentElf)
             currentElf = 0
