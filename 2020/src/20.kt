@@ -4,6 +4,11 @@ private lateinit var pieces: List<PuzzlePiece>
 private val bySides = mutableMapOf<String, MutableList<PuzzlePiece>>()
 private val solution = mutableMapOf<Pair<Int, Int>, PuzzlePiece>()
 
+private val top = "..................#.".toPattern()
+private val middle = "#....##....##....###".toPattern()
+private val bottom = ".#..#..#..#..#..#...".toPattern()
+private const val dragonFactor = 15
+
 fun main() {
     pieces = getInput(20, 2020).split("\n\n").map { puzzleString ->
         val lines = puzzleString.lines().toMutableList()
@@ -24,9 +29,29 @@ fun main() {
 
     // Can also do by scanning the corner pieces
     println("Part 1: " + solution[0 to 0]!!.id * solution[11 to 0]!!.id * solution[0 to 11]!!.id * solution[11 to 11]!!.id)
+
+    val stitched = (0..11).joinToString("\n") { y ->
+        /*"y = $y:\n" + */mergeLines((11 downTo 0)
+        .map { x ->
+            //listOf("x = $x:".padEnd(10)) +
+            solution[x to y]!!
+                .truncate()
+                .body.map { it.joinToString("") }
+        })
+    }
+
+    //val rotatedPuzzle = PuzzlePiece(0, stitched.split("\n").map { it.toCharArray() }.toTypedArray()).orientations().drop(5).first()
+
+    val dragons =
+        PuzzlePiece(0, stitched.split("\n").map { it.toCharArray() }.toTypedArray()).orientations().maxOf { pp ->
+            findDragons2(pp.body.map { it.concatToString() })
+        }
+
+    val squares = stitched.count { it == '#' }
+    println("Part 2: $squares - $dragons * $dragonFactor = " + (squares - dragons * dragonFactor))
 }
 
-fun solveRow(y: Int) {
+private fun solveRow(y: Int) {
     var x = if (y == 0) 1 else 0
     var leftPiece = solution[x - 1 to y]
     var topPiece: PuzzlePiece?
@@ -74,6 +99,7 @@ private data class PuzzlePiece(val id: Long, @Suppress("ArrayInDataClass") val b
         }.toTypedArray()
         return copy(body = new)
     }
+
     fun flip() = copy(
         body = body.reversedArray()
     )
@@ -89,15 +115,50 @@ private data class PuzzlePiece(val id: Long, @Suppress("ArrayInDataClass") val b
         }
     }
 
+    fun truncate(): PuzzlePiece {
+        return copy(body = body.drop(1)
+            .dropLast(1)
+            .map { it.drop(1).dropLast(1).toCharArray() }
+            .toTypedArray())
+    }
+
     override fun toString() = "[Piece $id: $sides]"
 }
 
 private fun mergeLines(lineSets: List<List<String>>): String {
     val newLines = lineSets.first().map { StringBuilder() }
     lineSets.forEach { block ->
-        block.forEachIndexed { i, s -> newLines[i].append(s).append("    ") }
+        block.forEachIndexed { i, s -> newLines[i].append(s) }
     }
     return newLines.joinToString("\n") { it.toString() }
 }
 
 private fun isEdgeSide(side: String) = bySides[side]!!.size == 1
+
+private fun findDragons2(lines: List<String>): Int {
+    var dragons = 0
+    lines.forEachIndexed { y, s ->
+        middle.matcher(s).results().forEach { m ->
+            val sub2 = lines.getOrNull(y - 1)?.subSequence(m.start() until m.end()) ?: return@forEach
+            println(sub2)
+            println(m.group(0))
+            val m2 = top.matcher(sub2)
+            if (!m2.find()) {
+                println("Rejected\n")
+                return@forEach
+            }
+            val sub3 = lines.getOrNull(y + 1)?.subSequence(m.start() until m.end()) ?: return@forEach
+            val m3 = bottom.matcher(sub3)
+            println(sub3)
+            if (!m3.find()) {
+                println("Rejected\n")
+                return@forEach
+            }
+            println("Here be dragons!\n")
+            dragons++
+        }
+    }
+
+    println("Found $dragons dragons")
+    return dragons
+}
