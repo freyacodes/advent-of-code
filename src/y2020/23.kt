@@ -1,3 +1,5 @@
+package y2020
+
 private class Ring(values: List<Int>) {
     var current: Node
     val map: Map<Int, Node>

@@ -1,3 +1,5 @@
+package y2022
+
 import java.util.*
 
 fun parseStacks(): List<Stack<String>> {

@@ -1,3 +1,5 @@
+package y2020
+
 import java.lang.StringBuilder
 
 private lateinit var pieces: List<PuzzlePiece>
@@ -10,13 +12,13 @@ private val bottom = ".#..#..#..#..#..#...".toPattern()
 private const val dragonFactor = 15
 
 fun main() {
-    pieces = getInputString(20, 2020).split("\n\n").map { puzzleString ->
+    pieces = getInputString(20).split("\n\n").map { puzzleString ->
         val lines = puzzleString.lines().toMutableList()
         val id = lines.removeFirst().drop(5).take(4).toLong()
         val bodyLines = lines.map { it.toCharArray() }.toTypedArray()
         PuzzlePiece(id, bodyLines)
     }
-    println("Parsed ${pieces.size} pieces")
+    println("Parsed ${pieces.size} y2020.pieces")
 
     val sides = pieces.flatMap { p -> (p.sides + p.sides.map { it.reversed() }).map { p to it } }
     sides.forEach { (pp, s) -> bySides.compute(s) { _, v -> v?.apply { add(pp) } ?: mutableListOf(pp) } }
@@ -27,7 +29,7 @@ fun main() {
         solveRow(it)
     }
 
-    // Can also do by scanning the corner pieces
+    // Can also do by scanning the corner y2020.pieces
     println("Part 1: " + solution[0 to 0]!!.id * solution[11 to 0]!!.id * solution[0 to 11]!!.id * solution[11 to 11]!!.id)
 
     val stitched = (0..11).joinToString("\n") { y ->
@@ -40,7 +42,7 @@ fun main() {
         })
     }
 
-    //val rotatedPuzzle = PuzzlePiece(0, stitched.split("\n").map { it.toCharArray() }.toTypedArray()).orientations().drop(5).first()
+    //val rotatedPuzzle = y2020.PuzzlePiece(0, stitched.split("\n").map { it.toCharArray() }.toTypedArray()).orientations().drop(5).first()
 
     val dragons =
         PuzzlePiece(0, stitched.split("\n").map { it.toCharArray() }.toTypedArray()).orientations().maxOf { pp ->
@@ -75,7 +77,7 @@ private fun solveRow(y: Int) {
         }
 
         solution[x to y] = newPiece
-        println("Found solution for $x $y")
+        println("Found y2020.solution for $x $y")
         if (isEdgeSide(newPiece.right)) {
             println("Completed row $y")
             return

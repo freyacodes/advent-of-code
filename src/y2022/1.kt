@@ -1,3 +1,5 @@
+package y2022
+
 fun main() {
     var currentElf = 0
     val elves = mutableListOf<Int>()

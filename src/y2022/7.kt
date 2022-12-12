@@ -1,3 +1,5 @@
+package y2022
+
 private sealed interface Entry {
     val size: Long
 }

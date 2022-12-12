@@ -1,3 +1,5 @@
+package y2022
+
 fun main() {
     val pairs = getInput(4).map() { s ->
         s.split(",").map {

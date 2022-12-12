@@ -1,3 +1,5 @@
+package y2020
+
 private fun parseDeck(string: String): ArrayDeque<Int> {
     return ArrayDeque(string.lines().drop(1).map { it.toInt() })
 }
@@ -12,7 +14,7 @@ private val ArrayDeque<Int>.score: Int get() {
 
 private fun partOne() {
     println("Part 1")
-    val (player1, player2) = getInputString(22, 2020).split("\n\n").map(::parseDeck)
+    val (player1, player2) = getInputString(22).split("\n\n").map(::parseDeck)
 
     while (player1.isNotEmpty() && player2.isNotEmpty()) {
         val hand1 = player1.removeFirst()
@@ -27,8 +29,8 @@ private fun partOne() {
     }
 
 
-    if (player1.isNotEmpty()) println("Player 1 score = " + player1.score)
-    else println("Player 2 score = " + player2.score)
+    if (player1.isNotEmpty()) println("Player 1 getScore = " + player1.score)
+    else println("Player 2 getScore = " + player2.score)
     println("----")
 }
 
@@ -78,9 +80,9 @@ private fun game(player1: ArrayDeque<Int>, player2: ArrayDeque<Int>): Pair<Int, 
 
 private fun partTwo() {
     println("Part 2")
-    val (player1, player2) = getInputString(22, 2020).split("\n\n").map(::parseDeck)
+    val (player1, player2) = getInputString(22).split("\n\n").map(::parseDeck)
     val (player, score) = game(player1, player2)
-    println("Player $player wins with score $score")
+    println("Player $player wins with getScore $score")
 }
 
 fun main() {

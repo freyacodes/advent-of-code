@@ -1,3 +1,5 @@
+package y2022
+
 fun main() {
     val scores1 = mapOf(
         "A X" to 1 + 3,

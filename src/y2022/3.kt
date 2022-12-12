@@ -1,3 +1,5 @@
+package y2022
+
 fun main() {
     val n = getInput(3).sumOf { s ->
         val c = s.take(s.length / 2).first { s.drop(s.length / 2).contains(it) }

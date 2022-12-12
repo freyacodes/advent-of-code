@@ -1,9 +1,11 @@
+package y2020
+
 import java.lang.Exception
 import java.lang.RuntimeException
 import java.lang.StringBuilder
 
 fun main() {
-    getInput(18, 2020)
+    getInput(18)
         .sumOf {
             try {
                 evaluateV2(tokenize(it)).value
