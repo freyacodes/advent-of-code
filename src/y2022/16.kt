@@ -1,135 +1,81 @@
 package y2022
 
-import java.util.LinkedList
-
-private fun parse(): Map<String, Node2> {
+private fun parse(): List<Valve> {
     val pattern = "Valve (\\w\\w) has flow rate=(\\d\\d?); tunnels? leads? to valves? (.+)".toPattern()
-    val map = mutableMapOf<String, Node2>()
     val visits = mutableMapOf<String, Int>()
-    getInput(16).forEach { line ->
+    var valves = getInput(16).map { line ->
         val m = pattern.matcher(line)
         m.find()
-        val connections = m.group(3).split(", ").toSortedSet()
-        val n = Node2(
-            map,
+        Valve(
             m.group(1),
-            30,
-            connections,
             m.group(2).toInt(),
-            emptySet(),
-            0,
-            visits
+            m.group(3).split(", ")
         )
-        map[n.name] = n
     }
-    map.values.forEach { visits[it.name] = if (it.flowRate == 0) 1 else 0 }
-    return map
+    valves.forEach { visits[it.name] = if (it.flowRate == 0) 1 else 0 }
+
+    valves.forEach { valve ->
+        valve.connections.addAll(valve.directConnections.map { v -> valves.first { v == it.name } to 1 })
+        while (valves.size - 1 != valve.connections.size) {
+            valve.connections.addAll(valve.connections.flatMap { (v, dist) -> v.directConnections.map { it to dist } }
+                .distinct()
+                .mapNotNull { (name, dist) ->
+                    if (valve.connections.any { it.first.name == name }) return@mapNotNull null
+                    if (name == valve.name) return@mapNotNull null
+                    valves.first { it.name == name } to dist + 1
+                }
+            )
+        }
+    }
+
+    valves = valves.mapNotNull { valve ->
+        if (valve.flowRate == 0 && valve.name != "AA") return@mapNotNull null
+        valve.connections.removeIf { it.first.flowRate == 0 }
+        valve
+    }
+
+    return valves
 }
 
-private class Node2(
-    val map: Map<String, Node2>,
+private class Valve(
     val name: String,
-    val minutesLeft: Int,
-    val connections: Set<String>,
     val flowRate: Int,
-    val opened: Set<String>,
-    val released: Int,
-    val visitCounts: Map<String, Int>
+    val directConnections: List<String>
 ) {
-    var parent: Node2? = null
-
-    override fun toString(): String {
-        return "Node2(name='$name', minutesLeft=$minutesLeft, released=$released)"
-    }
-
-    fun getChildren(): List<Node2> {
-        val list = mutableListOf<Node2>()
-
-        /*when {
-            minutesLeft == 25 && released < 500 -> return list
-            minutesLeft == 20 && released < 1000 -> return list
-            minutesLeft == 15 && released < 1200 -> return list
-            minutesLeft == 10 && released < 1400 -> return list
-            minutesLeft == 5 && released < 1500 -> return list
-            minutesLeft == 2 && released < 1600 -> return list
-            minutesLeft == 0 -> return list
-        }*/
-
-        when {
-            minutesLeft == 25 && released < 500-100 -> return list
-            minutesLeft == 20 && released < 1000-100 -> return list
-            minutesLeft == 15 && released < 1200-200 -> return list
-            minutesLeft == 10 && released < 1400-200 -> return list
-            minutesLeft == 5 && released < 1500-200 -> return list
-            minutesLeft == 2 && released < 1600-200 -> return list
-            minutesLeft == 0 -> return list
-        }
-
-        if (name !in opened && flowRate != 0) {
-            list.add(getConnection(name))
-        }
-
-        connections.forEach {
-            if (visitCounts[it]!! < 4) list.add(getConnection(it))
-        }
-
-        return list
-    }
-
-    private fun getConnection(theirName: String): Node2 {
-        val them = map[theirName]!!
-        val isRelease = name == theirName
-        return Node2(
-            map,
-            theirName,
-            minutesLeft - 1,
-            them.connections,
-            them.flowRate,
-            if (isRelease) opened.toSortedSet().apply { add(name) } else opened,
-            if (isRelease) released + flowRate * (minutesLeft - 1) else released,
-            visitCounts.toMutableMap().also { it[theirName] = visitCounts[theirName]!! + 1 }
-        )//.also { it.parent = this@Node2 }
-    }
+    val connections = mutableListOf<Pair<Valve, Int>>()
+    var open = false
 }
 
-private fun search(start: Node2): Node2 {
-    lateinit var best: Node2
-    var bestScore = 0
+private fun findBestPath(valve: Valve, timeLeft: Int): Int =
+    valve.connections.filter { (target, distance) -> !target.open && 0 < timeLeft - distance - 1 }
+        .maxOfOrNull { (target, distance) ->
+            val remaining = timeLeft - distance - 1
+            target.open = true
+            val released = remaining * target.flowRate + findBestPath(target, remaining)
+            target.open = false
+            released
+        } ?: 0
 
-    var startingPoints = start.getChildren()
-    repeat(18) {
-        startingPoints = startingPoints.flatMap { it.getChildren() }
-    }
-    println("Starting with ${startingPoints.size} staring points")
-    var n = 0
-    startingPoints.forEachIndexed { i, origin ->
-        val queue = LinkedList<Node2>()
-        queue.add(origin)
-        while (queue.isNotEmpty()) {
-            n++
-            if (n % 1000000 == 0) {
-                val mid = /*queue.size.toString() + */("+" + (startingPoints.size - i)).toString()
-                println(
-                    "${n.toString().padEnd(10)} ${mid.padEnd(15)} ${Runtime.getRuntime().freeMemory()}"
-                )
-            }
-            val node = queue.removeFirst()
-            val children = node.getChildren()
-            if (children.isEmpty()) {
-                if (node.released <= bestScore) continue
-                bestScore = node.released
-                best = node
-                println("New best score: $bestScore")
-                continue
-            }
-            queue.addAll(children)
-        }
-    }
-
-    return best
-}
+private fun findBestPathWithFriend(valveMe: Valve, timeLeftMe: Int, valveFriend: Valve, timeLeftFriend: Int): Int =
+    valveMe.connections.filter { (target, distance) -> !target.open && 0 < timeLeftMe - distance - 1 }
+        .maxOfOrNull { (targetMe, distanceMe) ->
+            val remainingMe = timeLeftMe - distanceMe - 1
+            targetMe.open = true
+            val releasedFriend = valveFriend.connections.filter { (targetFriend, distanceFriend) ->
+                !targetFriend.open && 0 < timeLeftFriend - distanceFriend - 1
+            }.maxOfOrNull { (targetFriend, distanceFriend) ->
+                val remainingFriend = timeLeftFriend - distanceFriend - 1
+                targetFriend.open = true
+                val next = findBestPathWithFriend(targetMe, remainingMe, targetFriend, remainingFriend)
+                targetFriend.open = false
+                remainingFriend * targetFriend.flowRate + next
+            } ?: 0
+            targetMe.open = false
+            targetMe.flowRate * remainingMe + releasedFriend
+        } ?: 0
 
 fun main() {
-    val start = parse()["AA"]!!
-    println(search(start))
+    println("Part one: " + findBestPath(parse().first { it.name == "AA" }, 30))
+    val start = parse().first { it.name == "AA" }
+    println("Part two: " + findBestPathWithFriend(start, 26, start, 26))
 }
