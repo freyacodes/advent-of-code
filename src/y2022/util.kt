@@ -7,6 +7,19 @@ fun getInput(day: Int) = File("src/y2022/input/${day}.txt").readLines()
 fun getInputString(day: Int) = File("src/y2022/input/${day}.txt").readText()
 
 fun p(x: Int, y: Int) = Point2(x, y)
+fun p(x: Int, y: Int, z: Int) = Point3(x, y, z)
+
+fun p2(list: List<Int>): Point2 {
+    if (list.size != 2) error("Bad size: ${list.size}")
+    return Point2(list[0], list[1])
+}
+
+fun p3(list: List<Int>): Point3 {
+    if (list.size != 3) error("Bad size: ${list.size}")
+    return Point3(list[0], list[1], list[2])
+}
+
+
 data class Point2(val x: Int, val y: Int) {
     operator fun plus(other: Point2) = p(x + other.x, y + other.y)
     operator fun minus(other: Point2) = p(x - other.x, y - other.y)
@@ -15,4 +28,22 @@ data class Point2(val x: Int, val y: Int) {
     val abs get() = p(x.absoluteValue, y.absoluteValue)
     val sum get() = x + y
     override fun toString() = "($x,$y)"
+}
+
+data class Point3(val x: Int, val y: Int, val z: Int) {
+    operator fun plus(other: Point3) = p(x + other.x, y + other.y, z + other.z)
+    fun getNeighbors(): Sequence<Point3> {
+        return sequence {
+            val p = this@Point3
+            yield(p + p(1, 0, 0))
+            yield(p + p(-1, 0, 0))
+            yield(p + p(0, 1, 0))
+            yield(p + p(0, -1, 0))
+            yield(p + p(0, 0, 1))
+            yield(p + p(0, 0, -1))
+
+        }
+    }
+
+    override fun toString() = "($x,$y,$z)"
 }
