@@ -2,9 +2,10 @@ package y2022
 
 import java.io.File
 import kotlin.math.absoluteValue
+import kotlin.math.ceil
 
-fun getInput(day: Int) = File("src/y2022/input/${day}.txt").readLines()
-fun getInputString(day: Int) = File("src/y2022/input/${day}.txt").readText()
+fun getInput(day: Int) = File("src/y2022/input/${day}.txt").readText().trim().lines()
+fun getInputString(day: Int) = File("src/y2022/input/${day}.txt").readText().trim()
 
 fun p(x: Int, y: Int) = Point2(x, y)
 fun p(x: Int, y: Int, z: Int) = Point3(x, y, z)
@@ -46,4 +47,13 @@ data class Point3(val x: Int, val y: Int, val z: Int) {
     }
 
     override fun toString() = "($x,$y,$z)"
+}
+
+fun <T> MutableCollection<T>.addNotNull(element: T?) {
+    element ?: return
+    add(element)
+}
+
+fun Int.ceilDiv(other: Int): Int {
+    return ceil(this.toFloat() / other).toInt()
 }
