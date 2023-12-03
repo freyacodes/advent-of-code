@@ -2,7 +2,7 @@ package y2023
 
 import kotlin.math.max
 
-fun partOne(): Int {
+private fun partOne(): Int {
     return getInput(2).mapIndexed { game, s ->
         game.inc() to s.dropWhile { !it.isDigit() }.drop(1).dropWhile { !it.isDigit() }
     }.sumOf { (game, string) ->
@@ -30,7 +30,7 @@ fun partOne(): Int {
     }
 }
 
-fun partTwo(): Int {
+private fun partTwo(): Int {
     return getInput(2).map { s ->
         s.dropWhile { !it.isDigit() }.drop(1).dropWhile { !it.isDigit() }
     }.sumOf { string ->

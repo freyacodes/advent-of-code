@@ -49,6 +49,20 @@ data class Point3(val x: Int, val y: Int, val z: Int) {
     override fun toString() = "($x,$y,$z)"
 }
 
+fun <T> Map<Point2, T>.getAdjacent(origin: Point2): List<Pair<Point2, T>> = listOf(
+    origin + p(-1, -1),
+    origin + p(0, -1),
+    origin + p(1, -1),
+    origin + p(-1, 0),
+    origin + p(1, 0),
+    origin + p(-1, 1),
+    origin + p(0, 1),
+    origin + p(1, 1)
+).mapNotNull {
+    val value = this[it] ?: return@mapNotNull null
+    it to value
+}
+
 fun <T> MutableCollection<T>.addNotNull(element: T?) {
     element ?: return
     add(element)
