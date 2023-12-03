@@ -5,7 +5,8 @@ import kotlin.math.absoluteValue
 import kotlin.math.ceil
 
 fun getInput(day: Int) = File("src/y2022/input/${day}.txt").readText().trim().lines()
-fun getInputString(day: Int) = File("src/y2022/input/${day}.txt").readText().trim()
+fun getInputStringUntrimmed(day: Int) = File("src/y2022/input/${day}.txt").readText()
+fun getInputString(day: Int) = getInputStringUntrimmed(day).trim()
 
 fun p(x: Int, y: Int) = Point2(x, y)
 fun p(x: Int, y: Int, z: Int) = Point3(x, y, z)

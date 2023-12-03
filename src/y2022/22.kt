@@ -7,15 +7,27 @@ private enum class MapTile {
     BLOCKED
 }
 
-private enum class Heading(val factor: Point2) {
+private enum class Heading(val offset: Point2) {
     RIGHT(p(1, 0)),
     DOWN(p(0, 1)),
     LEFT(p(-1, 0)),
     UP(p(0, -1))
 }
 
+private fun wrap1(map: Map<Point2, MapTile>, position: Point2, heading: Heading): WrapResult {
+    val wrap = when (heading) {
+        LEFT -> map.filter { it.key.y == position.y }.maxBy { it.key.x }
+        RIGHT -> map.filter { it.key.y == position.y }.minBy { it.key.x }
+        UP -> map.filter { it.key.x == position.x }.maxBy { it.key.y }
+        DOWN -> map.filter { it.key.x == position.x }.minBy { it.key.y }
+    }
+    return WrapResult(wrap.key, wrap.value, heading)
+}
+
+private data class WrapResult(val position: Point2, val tile: MapTile, val heading: Heading)
+
 private fun parse(): Pair<Map<Point2, MapTile>, List<Pair<Char, Int>>> {
-    val (upper, lower) = getInputString(22).split("\n\n")
+    val (upper, lower) = getInputStringUntrimmed(22).split("\n\n")
 
     val map = mutableMapOf<Point2, MapTile>()
 
@@ -36,21 +48,40 @@ private fun parse(): Pair<Map<Point2, MapTile>, List<Pair<Char, Int>>> {
     return map to commands
 }
 
-private fun partOne() {
+private fun partOne(wrap: (Map<Point2, MapTile>, Point2, Heading) -> WrapResult): Int {
     val (map, commands) = parse()
     var position = map.keys.filter { it.y == 1 }.minBy { it.x }
     var heading = RIGHT
+    println(commands)
 
     commands.forEach { (lr, length) ->
         if (lr == 'L') heading = Heading.values()[(heading.ordinal - 1).mod(4)]
         else if (lr == 'R') heading = Heading.values()[(heading.ordinal + 1).mod(4)]
 
         repeat(length) {
-            //val next =
+            var newPosition = position + heading.offset
+            var next = map[newPosition]
+            var newHeading = heading
+            if (next == null) {
+                val res = wrap(map, position, heading)
+                newPosition = res.position
+                next = res.tile
+                newHeading = res.heading
+            }
+
+            if (next == MapTile.BLOCKED) {
+                println("Position: $position, $heading")
+                return@forEach
+            }
+            position = newPosition
+            heading = newHeading
         }
+        println("Position: $position, $heading")
     }
+
+    return 1000 * position.y + 4 * position.x + heading.ordinal
 }
 
 fun main() {
-    partOne()
+    println("Part one: " + partOne(::wrap1))
 }
