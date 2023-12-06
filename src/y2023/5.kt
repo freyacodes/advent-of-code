@@ -72,7 +72,7 @@ private fun resolve(map: List<MapEntry>, input: LongRange): List<LongRange> {
 
 private fun partTwo(): Long {
     val (seeds, almanac) = parse()
-    val seedPairs = seeds.windowed(2, 2).map { (a,b) -> a until (a+b) }
+    val seedPairs = seeds.chunked(2).map { (a,b) -> a until (a+b) }
 
     return seedPairs.minOf { seedPair ->
         var currentRanges = mutableListOf(seedPair)
