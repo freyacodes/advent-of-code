@@ -10,6 +10,7 @@ fun getInputString(day: Int) = getInputStringUntrimmed(day).trim()
 
 fun p(x: Int, y: Int) = Point2(x, y)
 fun p(x: Int, y: Int, z: Int) = Point3(x, y, z)
+fun p(x: Long, y: Long) = Point2L(x, y)
 
 fun p2(list: List<Int>): Point2 {
     if (list.size != 2) error("Bad size: ${list.size}")
@@ -25,6 +26,16 @@ fun p3(list: List<Int>): Point3 {
 data class Point2(val x: Int, val y: Int) {
     operator fun plus(other: Point2) = p(x + other.x, y + other.y)
     operator fun minus(other: Point2) = p(x - other.x, y - other.y)
+    operator fun times(factor: Int) = p(x * factor, y * factor)
+    operator fun div(divisor: Int) = p(x / divisor, y / divisor)
+    val abs get() = p(x.absoluteValue, y.absoluteValue)
+    val sum get() = x + y
+    override fun toString() = "($x,$y)"
+}
+
+data class Point2L(val x: Long, val y: Long) {
+    operator fun plus(other: Point2L) = p(x + other.x, y + other.y)
+    operator fun minus(other: Point2L) = p(x - other.x, y - other.y)
     operator fun times(factor: Int) = p(x * factor, y * factor)
     operator fun div(divisor: Int) = p(x / divisor, y / divisor)
     val abs get() = p(x.absoluteValue, y.absoluteValue)
