@@ -1,6 +1,12 @@
 package y2023
 
-private data class SpringLine(val springs: String, val groups: List<Int>)
+private data class SpringLine(val springs: String, val groups: List<Int>) {
+    fun unfold(): SpringLine {
+        val newSprings = listOf(springs, springs, springs, springs, springs).joinToString("?")
+        val groups = groups + groups + groups + groups + groups
+        return SpringLine(newSprings, groups)
+    }
+}
 
 private fun parse(): List<SpringLine> {
     return getInput(12).map { line ->
@@ -10,11 +16,10 @@ private fun parse(): List<SpringLine> {
     }
 }
 
-fun resolve(springs: String, groups: List<Int>): Int {
+fun resolve(springs: String, groups: List<Int>): Long {
     val firstGroup = groups.first()
     var hasFoundFirstValid = false
-    var arrangements = 0
-
+    var arrangements = 0L
 
     repeat(springs.length) { offset ->
         val remainder = springs.drop(offset)
@@ -23,7 +28,7 @@ fun resolve(springs: String, groups: List<Int>): Int {
         val valid = isValid(remainder, firstGroup, groups.sum() - remainder.count { it == '#' })
         if (valid) {
             val found = if (groups.size > 1) {
-                resolve(springs.drop(firstGroup+offset+1), groups.drop(1))
+                memoize(springs.drop(firstGroup+offset+1), groups.drop(1))
             } else 1
 
             /*if (found > 0) {
@@ -38,6 +43,16 @@ fun resolve(springs: String, groups: List<Int>): Int {
     return arrangements
 }
 
+private val cache = mutableMapOf<Pair<String, List<Int>>, Long>()
+
+private fun memoize(springs: String, groups: List<Int>): Long {
+    val cached = cache[springs to groups]
+    if (cached != null) return cached
+    val new = resolve(springs, groups)
+    cache[springs to groups] = new
+    return new
+}
+
 fun isValid(string: String, broken: Int, maxHiddenBroken: Int): Boolean {
     if (broken > string.length) return false
     if (string.take(broken).count { it == '?' } > maxHiddenBroken) return false
@@ -46,14 +61,20 @@ fun isValid(string: String, broken: Int, maxHiddenBroken: Int): Boolean {
     return end != '#'
 }
 
-private fun partOne(): Int {
+private fun partOne(): Long {
     return parse().sumOf {
-        val res = resolve(it.springs, it.groups)
-        println("${it.springs} ${it.groups} $res")
-        res
+        resolve(it.springs, it.groups)
+    }
+}
+
+private fun partTwo(): Long {
+    var i = 0
+    return parse().map { it.unfold() }.sumOf {
+        memoize(it.springs, it.groups)
     }
 }
 
 fun main() {
     println("Part one ${partOne()}")
+    println("Part two ${partTwo()}")
 }
