@@ -4,15 +4,15 @@ import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 
-data class MapNode(val name: String, val left: String, val right: String)
+data class MapNode8(val name: String, val left: String, val right: String)
 
-private fun parse(): Pair<Sequence<Char>, Map<String, MapNode>> {
+private fun parse(): Pair<Sequence<Char>, Map<String, MapNode8>> {
     val lines = getInput(8)
     val directions = lines.first()
     val regex = "\\w\\w\\w".toRegex()
     val map = lines.drop(2).map {
         val found = regex.findAll(it).iterator()
-        MapNode(found.next().value, found.next().value, found.next().value)
+        MapNode8(found.next().value, found.next().value, found.next().value)
     }.associateBy { it.name }
 
     var index = 0
