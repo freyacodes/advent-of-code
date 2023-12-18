@@ -1,6 +1,5 @@
 package y2023
 
-import y2022.Point2
 import y2022.Point2L
 import y2022.p
 
