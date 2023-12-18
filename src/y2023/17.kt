@@ -23,11 +23,15 @@ private data class CrucibleNode(
     val position: Point2,
     val direction: Int,
     val heatLoss: Int,
-    val remainingStraightMoves: Int
+    val straightMoves: Int,
+    val partTwo: Boolean
 ) : Comparable<CrucibleNode> {
     fun getNextNodes(): List<CrucibleNode> {
         return (-1..1).mapNotNull { i ->
-            if (i == 0 && remainingStraightMoves == 0) return@mapNotNull null
+            if (!partTwo && i == 0 && straightMoves == 3) return@mapNotNull null
+            if (partTwo && i == 0 && straightMoves == 10) return@mapNotNull null
+            if (partTwo && i != 0 && straightMoves < 4) return@mapNotNull null
+
             var newDirection = (direction + i) % 4
             if (newDirection < 0) newDirection = 3
             val delta = directions[newDirection]
@@ -38,7 +42,8 @@ private data class CrucibleNode(
                 newPosition,
                 newDirection,
                 heatLoss + heatLossFromMap,
-                if (i == 0) remainingStraightMoves.dec() else 2
+                if (i == 0) straightMoves + 1 else 1,
+                partTwo
             )
         }
     }
@@ -51,25 +56,27 @@ private data class CrucibleNode(
         return "$position $heatLoss"
     }
 
-    fun getState() = CrucibleState(position, direction, remainingStraightMoves)
+    fun getState() = CrucibleState(position, direction, straightMoves)
 }
 
-private data class CrucibleState(val position: Point2, val direction: Int, val remainingStraightMoves: Int)
+private data class CrucibleState(val position: Point2, val direction: Int, val straightMoves: Int)
 
-private fun partOne(): Int {
+private fun resolve(partTwo: Boolean): Int {
     val map = parse()
     val maxX = map.maxOf { it.key.x }
     val maxY = map.maxOf { it.key.y }
     val goal = p(maxX, maxY)
     val remaining = PriorityQueue<CrucibleNode>()
     val visited = mutableSetOf<CrucibleState>()
-    remaining.add(CrucibleNode(map, p(1,0), 1, map[p(1,0)]!!, 2))
-    remaining.add(CrucibleNode(map, p(0,1), 2, map[p(0,1)]!!, 2))
+    remaining.add(CrucibleNode(map, p(1,0), 1, map[p(1,0)]!!, 1, partTwo))
+    remaining.add(CrucibleNode(map, p(0,1), 2, map[p(0,1)]!!, 1, partTwo))
 
     while (remaining.isNotEmpty()) {
         val node = remaining.remove()
         if (visited.contains(node.getState())) continue
-        if (node.position == goal) return node.heatLoss
+        if (node.position == goal) {
+            if (!partTwo || node.straightMoves >= 4) return node.heatLoss
+        }
         val neighbors = node.getNextNodes()
         visited.add(node.getState())
         remaining.addAll(neighbors)
@@ -79,5 +86,6 @@ private fun partOne(): Int {
 }
 
 fun main() {
-    println("Part one " + partOne()) // 644 too high
+    println("Part one " + resolve(partTwo = false))
+    println("Part two " + resolve(partTwo = true))
 }
