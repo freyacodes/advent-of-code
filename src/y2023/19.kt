@@ -1,21 +1,11 @@
 package y2023
 
-//private var iteration = 0
 private data class PartValues(
     val x: Int,
     val m: Int,
     val a: Int,
     val s: Int
 ) {
-
-    operator fun get(c: Char) = when (c) {
-        'x' -> x
-        'm' -> m
-        'a' -> a
-        's' -> s
-        else -> error("Panic! $c")
-    }
-
     val sum = x + m + a + s
 }
 
@@ -26,7 +16,6 @@ private data class PartSequences(
     val s: List<Int>,
     val visited: Set<Condition> = emptySet()
 ) {
-    //val i = iteration++
     operator fun get(c: Char) = when (c) {
         'x' -> x
         'm' -> m
@@ -51,15 +40,7 @@ private data class PartSequences(
 private data class Workflow(val name: String, val conditions: List<Condition>, val elseThen: String)
 
 private data class Condition(val target: Char, val lessThan: Boolean, val threshold: Int, val ifTrue: String) {
-    fun check(part: PartValues): String? {
-        val value = part[target]
-        val result = if (lessThan) value < threshold
-        else value > threshold
-        return if (result) ifTrue else null
-    }
-
     fun check(parts: PartSequences): Pair<PartSequences, PartSequences> {
-        //println(parts.i)
         val original = parts[target]
         fun condition(n: Int) = if (lessThan) n < threshold else n > threshold
         val trues = original.filter { condition(it) }
@@ -95,31 +76,7 @@ private fun parse(): Pair<Map<String, Workflow>, List<PartValues>> {
     return workflows to parts
 }
 
-private fun resolve(workflow: Workflow, part: PartValues): String {
-    workflow.conditions.forEach { condition ->
-        val result = condition.check(part)
-        if (result != null) return result
-    }
-    return workflow.elseThen
-}
-
-private fun partOne(): Int {
-    val (workflows, parts) = parse()
-
-    return parts.filter { part ->
-        println(part)
-        var nextWorkflow = "in"
-        while (nextWorkflow.length != 1) {
-            nextWorkflow = resolve(workflows[nextWorkflow]!!, part)
-            println("-> $nextWorkflow")
-        }
-        nextWorkflow == "A"
-    }.sumOf { it.sum }
-}
-
-private var i = 0
-private fun resolve2(workflows: Map<String, Workflow>, workflowName: String, input: PartSequences): Long {
-    i++
+private fun resolve(workflows: Map<String, Workflow>, workflowName: String, input: PartSequences): Long {
     if (input.product() == 0L) return 0
     val workflow: Workflow
     when (workflowName) {
@@ -135,19 +92,19 @@ private fun resolve2(workflows: Map<String, Workflow>, workflowName: String, inp
     workflow.conditions.forEach { condition ->
         val (trues, falses) = condition.check(nextInput)
         nextInput = falses
-        sum += resolve2(workflows, condition.ifTrue, trues)
+        sum += resolve(workflows, condition.ifTrue, trues)
     }
 
-    return sum + resolve2(workflows, workflow.elseThen, nextInput)
+    return sum + resolve(workflows, workflow.elseThen, nextInput)
 }
 
-private fun partOneAlt(): List<Long> {
+private fun partOne(): Int {
     val (workflows, inputs) = parse()
-    return inputs.map {
-        it.run {
-            resolve2(workflows, "in", PartSequences((x..x).toList(), (m..m).toList(), (a..a).toList(), (s..s).toList()))
+    return inputs.filter {
+        1L == it.run {
+            resolve(workflows, "in", PartSequences((x..x).toList(), (m..m).toList(), (a..a).toList(), (s..s).toList()))
         }
-    }
+    }.sumOf { it.sum }
 }
 
 private fun partTwo(): Long {
@@ -155,7 +112,7 @@ private fun partTwo(): Long {
     val initial = PartSequences((1..4000).toList(), (1..4000).toList(),
         (1..4000).toList(), (1..4000).toList())
 
-    return resolve2(workflows, "in", initial)
+    return resolve(workflows, "in", initial)
 }
 
 fun main() {
