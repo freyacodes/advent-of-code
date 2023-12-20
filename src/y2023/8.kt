@@ -57,7 +57,7 @@ private fun partTwo(): Long {
 
     println("Step counts: $stepCounts")
 
-    return lcf(stepCounts)
+    return lcm(stepCounts)
 }
 
 fun gcd(a: Long, b: Long): Long {
@@ -69,7 +69,7 @@ fun gcd(a: Long, b: Long): Long {
     return gcd(min, max % min)
 }
 
-fun lcf(numbers: List<Long>) = numbers.reduce { a, b ->
+fun lcm(numbers: List<Long>) = numbers.reduce { a, b ->
     a.absoluteValue * (b.absoluteValue / gcd(a, b))
 }
 

@@ -54,7 +54,6 @@ private fun parse(): Pair<Map<String, PulseNode>, List<String>> {
     }.associateBy { it.name }
 
     map.values.forEach { node ->
-        println(node)
         node.outputs = node.outputNames.map { map[it] ?: DummyNode(it) }
         if (node is Conjunction) {
             node.inputs = map.values.filter { node.name in it.outputNames }
@@ -70,21 +69,21 @@ private fun parse(): Pair<Map<String, PulseNode>, List<String>> {
     return map to broadcasterOutputs
 }
 
-private fun pushButton(nodes: Map<String, PulseNode>, broadcastOutputs: List<String>): Pair<Point2, Boolean> {
+private fun pushButton(nodes: Map<String, PulseNode>, broadcastOutputs: List<String>): Pair<Point2, Set<String>> {
     var lows = 1
     var highs = 0
     val remainingPulses = broadcastOutputs.map { Pulse("broadcaster", nodes[it]!!, false) }
         .toMutableList()
-    var lowSentToRx = false
+    val highPulsed = mutableSetOf<String>()
 
     while (remainingPulses.isNotEmpty()) {
         val pulse = remainingPulses.removeFirst()
         if (pulse.high) highs++ else lows++
-        if (pulse.to.name == "rx" && !pulse.high) lowSentToRx = true
+        if (pulse.high) highPulsed.add(pulse.from)
         remainingPulses.addAll(pulse.to.pulse(pulse))
     }
 
-    return p(lows, highs) to lowSentToRx
+    return p(lows, highs) to highPulsed
 }
 
 private fun partOne(): Long {
@@ -96,11 +95,19 @@ private fun partOne(): Long {
     return sum.x.toLong() * sum.y.toLong()
 }
 
-private fun partTwo(): Int {
-    val input = parse()
-    repeat(1000000000) {
-        if (pushButton(input.first, input.second).second) {
-            return it + 1
+private fun partTwo(): Long {
+    val (nodes, broadcastOutputs) = parse()
+    var last = 0
+    val finalConjunction = nodes.values.find { it.outputNames == listOf("rx") } as Conjunction
+    val secondaryConjunctions: MutableMap<String, Int?> = finalConjunction.inputs.keys.associateWith { null }.toMutableMap()
+    println(finalConjunction.inputs.keys)
+    (1..5000).forEach { i ->
+        pushButton(nodes, broadcastOutputs).second.forEach { conj ->
+            if (conj in secondaryConjunctions.keys) secondaryConjunctions[conj] = i
+        }
+        if (secondaryConjunctions.none { it.value == null }) {
+            println(secondaryConjunctions)
+            return lcm(secondaryConjunctions.values.map { it!!.toLong() })
         }
     }
     error("Panic!")
