@@ -31,6 +31,7 @@ private class Brick(var points: List<Point3>) {
 
     lateinit var supportedBy: Set<Brick>
     lateinit var supports: Set<Brick>
+    private var allAbove: Set<Brick>? = null
 
     init {
         update()
@@ -53,9 +54,15 @@ private class Brick(var points: List<Point3>) {
         supportedBy = lower.mapNotNull { map[it] }.toSet()
         supports = upper.mapNotNull { map[it] }.toSet()
     }
+
+    fun getAllAbove(): Set<Brick> {
+        if (allAbove != null) return allAbove!!
+        allAbove = supports.flatMap { it.getAllAbove() }.plus(supports).toSet()
+        return allAbove!!
+    }
 }
 
-private fun partOne(): Int {
+fun main() {
     val tower = parse().toMutableList()
 
     tower.filter { it.zMin > 1 }.sortedBy { it.zMin }.forEach { toFall ->
@@ -70,11 +77,22 @@ private fun partOne(): Int {
 
     tower.forEach { it.secondPass(pointsToBrick) }
 
-    return tower.count { brick ->
+    val canDisintegrate = tower.count { brick ->
         brick.supports.all { it.supportedBy.size > 1 }
     }
-}
+    println("Part one: $canDisintegrate")
 
-fun main() {
-    println("Part one: " + partOne())
+    val chainReaction = tower.sumOf { brick ->
+        val allAbove = brick.getAllAbove().toList().sortedBy { it.zMin }
+        val supportsWhichWouldGoAway = mutableSetOf(brick)
+
+        allAbove.forEach { other ->
+            if (supportsWhichWouldGoAway.containsAll(other.supportedBy)) {
+                supportsWhichWouldGoAway.add(other)
+            }
+        }
+        supportsWhichWouldGoAway.size - 1
+    }
+
+    println("Part two: $chainReaction") // 1095 too low
 }
