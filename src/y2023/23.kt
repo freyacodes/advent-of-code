@@ -102,6 +102,38 @@ private fun partOne(): Int {
     return firstNode.getNodesRecursive().filter { it.continuationPoint == null }.maxOf { it.distance }
 }
 
+private data class PathSegment(val from: Point2, val to: Point2, val distance: Int)
+
+private fun bfs2(map: Map<Point2, Char>, pointsOfInterest: Set<Point2>, origin: Point2) {
+    data class Bfs2Node(val point: Point2, val char: Char, val dist: Int) {
+        fun getNeighbors() {
+            directions.mapNotNull { direction ->
+                val newPoint = point + direction
+                val char = map[newPoint]
+                if (char != null && char != '#') Bfs2Node(newPoint, char, dist + 1)
+                else null
+            }
+        }
+    }
+
+    val segments = mutableListOf<PathSegment>()
+    val queue = mutableListOf(Bfs2Node(origin, '.', 0))
+    val added = mutableSetOf(queue.first())
+
+    while (queue.isNotEmpty()) {
+        val removed = queue.removeFirst()
+    }
+}
+
+private fun partTwo() {
+    val map = parse()
+    val start = p(1, 0)
+    val finalGoal = p(map.maxOf { it.key.x } - 1, map.maxOf { it.key.y })
+    val pointsOfInterest = map.filter { it.value !in listOf('.', '#') }.keys + setOf(start, finalGoal)
+
+
+}
+
 fun main() {
     println("Part one: " + partOne())
 }
