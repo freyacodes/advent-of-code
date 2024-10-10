@@ -1,7 +1,6 @@
 package y2020
 
 class Day21(input: List<String>) {
-
     private val food: Map<Set<String>, Set<String>> = parseInput(input)
     private val allIngredients: Set<String> = food.keys.flatten().toSet()
     private val allAllergies: Set<String> = food.values.flatten().toSet()
@@ -62,5 +61,6 @@ class Day21(input: List<String>) {
 
 fun main() {
     val d = Day21(getInput(21))
+    println(d.solvePart1())
     println(d.solvePart2())
 }

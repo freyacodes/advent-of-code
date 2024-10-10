@@ -75,6 +75,16 @@ fun <T> Map<Point2, T>.getAdjacent(origin: Point2): List<Pair<Point2, T>> = list
     it to value
 }
 
+fun <T> Map<Point2, T>.getAdjacentNoDiagonals(origin: Point2): List<Pair<Point2, T>> = listOf(
+    origin + p(0, -1),
+    origin + p(-1, 0),
+    origin + p(1, 0),
+    origin + p(0, 1),
+).mapNotNull {
+    val value = this[it] ?: return@mapNotNull null
+    it to value
+}
+
 fun <T> MutableCollection<T>.addNotNull(element: T?) {
     element ?: return
     add(element)
