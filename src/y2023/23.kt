@@ -111,7 +111,8 @@ private fun partOne(): Int {
 private class PathSegment(points: Pair<Point2, Point2>, val distance: Int) {
     val pointA = points.toList().minBy { it.hashCode() }
     val pointB = points.toList().maxBy { it.hashCode() }
-    override fun toString() = "[$pointA <-> $pointB dist=$distance]"
+    var stepsFromExit = -1
+    override fun toString() = "[$pointA <-> $pointB dist=$distance, exitSteps=$stepsFromExit]"
 
     fun other(one: Point2): Point2 {
         return when (one) {
@@ -144,7 +145,7 @@ private fun buildMap2(
     stringMap: Map<Point2, Char>,
     start: Point2,
     finalGoal: Point2
-): MutableMap<Point2, MutableSet<PathSegment>> {
+): Pair<MutableMap<Point2, MutableSet<PathSegment>>, MutableMap<Point2, Int>> {
     val endpoints = stringMap.filter {
         it.value == '.'
     }.filter {
@@ -177,14 +178,44 @@ private fun buildMap2(
             }
         }
 
-    return segmentMap
+    val stepsFromExit = mutableMapOf<Point2, Int>()
+    var nextPoints = listOf(finalGoal)
+    var steps = 0
+
+    while (nextPoints.isNotEmpty()) {
+        nextPoints.forEach { stepsFromExit[it] = steps }
+        steps++
+        nextPoints = nextPoints.flatMap {
+            val segments = segmentMap[it] ?: return@flatMap emptyList()
+            segments.flatMap { s -> listOf(s.pointA, s.pointB) }
+        }.filter { it !in stepsFromExit.keys }
+    }
+
+    return segmentMap to stepsFromExit
 }
 
-private fun bfs2(map: Map<Point2, MutableSet<PathSegment>>, origin: Point2, finalGoal: Point2): Int {
+private fun bfs2(
+    map: Map<Point2, MutableSet<PathSegment>>,
+    stepsToExit: MutableMap<Point2, Int>,
+    origin: Point2,
+    finalGoal: Point2
+): Int {
+    val allCrossroads = stepsToExit.keys
+
     data class Bfs2Node(val location: Point2, val dist: Int, val visitedCrossroads: List<Point2>) {
         fun getNeighbors(): List<Bfs2Node> = map[location]!!
             .filter { it.other(location) !in visitedCrossroads }
-            .map { Bfs2Node(it.other(location), dist + it.distance, visitedCrossroads + location) }
+            .mapNotNull { segment ->
+                val visitedCrossroads = visitedCrossroads + location
+                val newLocation = segment.other(location)
+                val availableSteps = (allCrossroads - visitedCrossroads.toSet()).map { stepsToExit[it] }.toSet()
+
+                for (step in stepsToExit[newLocation]!! downTo 1) {
+                    if (step !in availableSteps) return@mapNotNull null
+                }
+
+                Bfs2Node(newLocation, dist + segment.distance, visitedCrossroads)
+            }
     }
 
     val segments = mutableListOf<PathSegment>()
@@ -210,8 +241,8 @@ private fun partTwo(): Int {
     val stringMap = parse()
     val start = p(1, 0)
     val finalGoal = p(stringMap.maxOf { it.key.x } - 1, stringMap.maxOf { it.key.y })
-    val segmentMap = buildMap2(stringMap, start, finalGoal)
-    return bfs2(segmentMap, start, finalGoal)
+    val (segmentMap, stepsToExit) = buildMap2(stringMap, start, finalGoal)
+    return bfs2(segmentMap, stepsToExit, start, finalGoal)
 }
 
 fun main() {
